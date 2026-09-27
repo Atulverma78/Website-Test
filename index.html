@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h1 {
+            font-size: 28px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .modal-content p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .modal-content button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .modal-content button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .modal-content button:active {
+            transform: translateY(0);
+        }
+
+        .verification-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ring-container {
+            position: relative;
+            width: 292px;
+            height: 292px;
+        }
+
+        canvas {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .spinning-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 5px solid transparent;
+            border-top: 5px solid #667eea;
+            border-right: 5px solid #764ba2;
+            border-bottom: 5px solid #f093fb;
+            top: 0;
+            left: 0;
+            animation: spin 3s linear infinite;
+            z-index: 5;
+            transition: border-color 0.5s ease;
+        }
+
+        .spinning-ring.verified {
+            animation: none;
+            border-top-color: #4caf50;
+            border-right-color: #4caf50;
+            border-bottom-color: #4caf50;
+        }
+
+        .spinning-ring.failed {
+            animation: none;
+            border-top-color: #f44336;
+            border-right-color: #f44336;
+            border-bottom-color: #f44336;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .verifying-text {
+            text-align: center;
+            pointer-events: none;
+            min-height: 30px;
+        }
+
+        .verifying-text p {
+            font-size: 16px;
+            color: white;
+            font-weight: 500;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: fadeDot 1.4s infinite;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes fadeDot {
+            0%, 60%, 100% {
+                opacity: 0.3;
+            }
+            30% {
+                opacity: 1;
+            }
+        }
+
+        .status-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 500;
+            opacity: 0;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        .status-text.verified {
+            color: #4caf50;
+        }
+
+        .status-text.failed {
+            color: #f44336;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .retry-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            animation: fadeInButton 0.6s ease 0.3s forwards;
+            transition: all 0.2s ease;
+        }
+
+        .retry-btn.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .retry-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @keyframes fadeInButton {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .challenge-text {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            min-height: 24px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h1>🔐 Verification Required</h1>
+            <p>We need to verify that you're a real person. This keeps our platform safe and secure.</p>
+            <button onclick="startVerification()">Next</button>
+        </div>
+    </div>
+
+    <!-- Verification Screen -->
+    <div class="verification-container" id="verificationContainer" style="display: none;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 30px;">
+            <div class="challenge-text" id="challengeText">📸 Smile to verify you're alive</div>
+            
+            <div class="ring-container">
+                <canvas id="camera"></canvas>
+                <div class="spinning-ring" id="ring"></div>
+                <div class="status-text" id="statusText"></div>
+            </div>
+            
+            <div class="verifying-text" id="verifyingText">
+                <p>Verifying<span class="dot"></span><span class="dot"></span><span class="dot"></span></p>
+            </div>
+            
+            <button class="retry-btn" id="retryBtn" onclick="resetVerification()">Retry</button>
+        </div>
+    </div>
+
+    <!-- face-api.js library -->
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/face-api.min.js"></script>
+
+    <script>
+        let video, canvas, ctx, verificationTimer, animationId;
+        let isVerifying = false;
+        let faceDetected = false;
+
+        async function startVerification() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('verificationContainer').style.display = 'flex';
+            
+            canvas = document.getElementById('camera');
+            ctx = canvas.getContext('2d');
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
+                
+                // Wait for video to load
+                video.onloadedmetadata = () => {
+                    canvas.width = 280;
+                    canvas.height = 280;
+                    drawCamera();
+                    startFaceDetection();
+                };
+            } catch (error) {
+                console.error('Camera access denied:', error);
+                alert('Please allow camera access to continue');
+            }
+        }
+
+        function drawCamera() {
+            if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
+                animationId = requestAnimationFrame(drawCamera);
+                return;
+            }
+
+            // Mirror the video
+            ctx.scale(-1, 1);
+            ctx.translate(-canvas.width, 0);
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            animationId = requestAnimationFrame(drawCamera);
+        }
+
+        async function startFaceDetection() {
+            isVerifying = true;
+            faceDetected = false;
+            let detectionStartTime = Date.now();
+            let eyeBlinkDetected = false;
+            let smileDetected = false;
+            let consecutiveNoFaceFrames = 0;
+            
+            const detectFace = async () => {
+                try {
+                    if (video && video.readyState === video.HAVE_ENOUGH_DATA) {
+                        // Create a canvas to draw the video for face detection
+                        const detectionCanvas = document.createElement('canvas');
+                        detectionCanvas.width = video.videoWidth;
+                        detectionCanvas.height = video.videoHeight;
+                        const detectionCtx = detectionCanvas.getContext('2d');
+                        detectionCtx.drawImage(video, 0, 0);
+                        
+                        // Detect faces with landmarks and expressions
+                        const detections = await faceapi.detectAllFaces(detectionCanvas)
+                            .withFaceLandmarks()
+                            .withFaceExpressions();
+                        
+                        if (detections && detections.length > 0) {
+                            faceDetected = true;
+                            consecutiveNoFaceFrames = 0;
+                            
+                            // Check for liveness signals
+                            const detection = detections[0];
+                            
+                            // Check for blink (eyes closed detection)
+                            if (detection.expressions) {
+                                if (detection.expressions.neutral > 0.4) {
+                                    // Face is present and stable
+                                    eyeBlinkDetected = true;
+                                }
+                                
+                                // Check for smile
+                                if (detection.expressions.happy > 0.6) {
+                                    smileDetected = true;
+                                }
+                            }
+                        } else {
+                            faceDetected = false;
+                            consecutiveNoFaceFrames++;
+                            // If no face detected for several frames, fail verification
+                            if (consecutiveNoFaceFrames > 10) {
+                                faceDetected = false;
+                            }
+                        }
+                    }
+                    
+                    // Check if 10 seconds have passed
+                    const elapsed = Date.now() - detectionStartTime;
+                    if (elapsed >= 10000) {
+                        // Require at least face present and smile for liveness
+                        if (faceDetected && smileDetected) {
+                            faceDetected = true;
+                        } else {
+                            faceDetected = false;
+                        }
+                        completeVerification();
+                        return;
+                    }
+                    
+                    verificationTimer = setTimeout(detectFace, 300);
+                } catch (error) {
+                    console.error('Face detection error:', error);
+                    verificationTimer = setTimeout(detectFace, 300);
+                }
+            };
+            
+            detectFace();
+        }
+
+        function completeVerification() {
+            isVerifying = false;
+            clearTimeout(verificationTimer);
+            
+            const ring = document.getElementById('ring');
+            const verifyingText = document.getElementById('verifyingText');
+            const challengeText = document.getElementById('challengeText');
+            const statusText = document.getElementById('statusText');
+            const retryBtn = document.getElementById('retryBtn');
+            
+            verifyingText.innerHTML = '';
+            challengeText.innerHTML = '';
+            
+            if (faceDetected) {
+                // Verified
+                ring.classList.add('verified');
+                statusText.textContent = '✓ Verified';
+                statusText.classList.add('verified');
+                
+                setTimeout(() => {
+                    // Redirect after 3 seconds
+                    const redirectUrl = prompt('Enter the redirect URL:', window.location.origin);
+                    if (redirectUrl) {
+                        window.location.href = redirectUrl;
+                    }
+                }, 3000);
+            } else {
+                // Failed
+                ring.classList.add('failed');
+                statusText.textContent = '✗ Liveness Not Detected';
+                statusText.classList.add('failed');
+                retryBtn.classList.add('show');
+            }
+        }
+
+        function resetVerification() {
+            document.getElementById('ring').classList.remove('verified', 'failed');
+            document.getElementById('statusText').textContent = '';
+            document.getElementById('statusText').classList.remove('verified', 'failed');
+            document.getElementById('verifyingText').innerHTML = '<p>Verifying<span class="dot"></span><span class="dot"></span><span class="dot"></span></p>';
+            document.getElementById('challengeText').textContent = '📸 Smile to verify you\'re alive';
+            document.getElementById('retryBtn').classList.remove('show');
+            
+            faceDetected = false;
+            startFaceDetection();
+        }
+
+        // Load face-api models
+        async function loadModels() {
+            const MODEL_URL = 'https://cdnjs.cloudflare.com/ajax/libs/face-api.js/0.22.2/models/';
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        }
+
+        loadModels().catch(err => console.error('Model loading failed:', err));
+    </script>
+</body>
+</html>
