@@ -277,7 +277,7 @@
     <!-- Verification Screen -->
     <div class="verification-container" id="verificationContainer" style="display: none;">
         <div style="display: flex; flex-direction: column; align-items: center; gap: 30px;">
-            <div class="challenge-text" id="challengeText">📸 Smile to verify you're alive</div>
+            <div class="challenge-text" id="challengeText">📸 Look at the camera</div>
             
             <div class="ring-container">
                 <canvas id="camera"></canvas>
@@ -349,8 +349,6 @@
             isVerifying = true;
             faceDetected = false;
             let detectionStartTime = Date.now();
-            let eyeBlinkDetected = false;
-            let smileDetected = false;
             let consecutiveNoFaceFrames = 0;
             
             const detectFace = async () => {
@@ -371,22 +369,6 @@
                         if (detections && detections.length > 0) {
                             faceDetected = true;
                             consecutiveNoFaceFrames = 0;
-                            
-                            // Check for liveness signals
-                            const detection = detections[0];
-                            
-                            // Check for blink (eyes closed detection)
-                            if (detection.expressions) {
-                                if (detection.expressions.neutral > 0.4) {
-                                    // Face is present and stable
-                                    eyeBlinkDetected = true;
-                                }
-                                
-                                // Check for smile
-                                if (detection.expressions.happy > 0.6) {
-                                    smileDetected = true;
-                                }
-                            }
                         } else {
                             faceDetected = false;
                             consecutiveNoFaceFrames++;
@@ -397,15 +379,9 @@
                         }
                     }
                     
-                    // Check if 10 seconds have passed
+                    // Check if 11 seconds have passed
                     const elapsed = Date.now() - detectionStartTime;
-                    if (elapsed >= 10000) {
-                        // Require at least face present and smile for liveness
-                        if (faceDetected && smileDetected) {
-                            faceDetected = true;
-                        } else {
-                            faceDetected = false;
-                        }
+                    if (elapsed >= 11000) {
                         completeVerification();
                         return;
                     }
@@ -460,7 +436,7 @@
             document.getElementById('statusText').textContent = '';
             document.getElementById('statusText').classList.remove('verified', 'failed');
             document.getElementById('verifyingText').innerHTML = '<p>Verifying<span class="dot"></span><span class="dot"></span><span class="dot"></span></p>';
-            document.getElementById('challengeText').textContent = '📸 Smile to verify you\'re alive';
+            document.getElementById('challengeText').textContent = '📸 Look at the camera';
             document.getElementById('retryBtn').classList.remove('show');
             
             faceDetected = false;
