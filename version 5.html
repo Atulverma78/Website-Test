@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afreen all pics [Versions]</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+            background-image: url("https://www.dropbox.com/scl/fi/c91et722nbr2kftt2dp6o/55a75bd94ac9b2cf880285e04f5a4b27.jpeg?rlkey=x3lrpo4ti2d1040t9sg1soa3n&st=akdiinqr&raw=1");
+            background-size:cover;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 300px;
+            height: auto;
+            text-align: center;
+        }
+
+        .rotating-circle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 290px; 
+            height: 290px;
+            border-radius: 50%;
+            background: conic-gradient(red, orange, yellow, green, cyan, blue, purple, red);
+            animation: rotate 1s linear infinite;
+            z-index: -1;
+        }
+
+        img {
+            width: 100%; 
+            height: auto;
+            display: block;
+            position: relative;
+            z-index: 0;
+           }
+        
+        .notshow {
+            width: 100%; 
+            height: auto;
+            display: block;
+            opacity: 1;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button {
+            padding: 12px 25px;
+            margin: 10px;
+            border: none;
+            border-radius: 50px;
+            color: white;
+            background-color: #ff5a5f;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button:hover {
+            background-color: #ff3b40;
+            transform: translateY(-3px); 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            100% {
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                width: 300px;
+            }
+            .rotating-circle {
+                width: 320px;
+                height: 320px;
+            }
+            .button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: 260px;
+            }
+            .rotating-circle {
+                width: 280px;
+                height: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="rotating-circle"></div>
+    <img src="https://www.dropbox.com/scl/fi/f5y89vizztmb4at3wtd9t/20240908_200114.png?rlkey=1ykict0vy24tswazgcu8e9t18&st=nsqansle&raw=1" alt="Instagram">
+    <a href="https://www.instagram.com/sheikh_afreen_096/">
+        <img class="notshow" src="notshow.png" alt="Instagram">
+    </a>
+</div>
+
+<div class="button-container">
+    <a href="version1" class="button" onclick="openLink(event, 'version1')">Version 1</a>
+    <a href="version2" class="button" onclick="openLink(event, 'version2')">Version 2</a>
+    <a href="version3" class="button" onclick="openLink(event, 'version3')">Version 3</a>
+    <a href="version4" class="button" onclick="openLink(event, 'version4')">Version 4</a>
+    <a href="version5" class="button" onclick="openLink(event, 'version5')">Version 5</a>
+    <a href="version6" class="button" onclick="openLink(event, 'version6')">Version 6</a>
+</div>
+
+<script>
+    function openLink(event, link) {
+        event.preventDefault(); // Prevent default anchor click behavior
+        const button = event.currentTarget; // Get the clicked button
+
+        // Optional: Add some animation logic here (e.g., change button appearance)
+        
+        setTimeout(() => {
+            window.location.href = link; // Redirect after delay
+        }, 300); // Delay in milliseconds (300 ms = 0.3 seconds)
+    }
+</script>
+
+</body>
+</html>
